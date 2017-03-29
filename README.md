@@ -1,3 +1,6 @@
+[![CircleCI](https://circleci.com/gh/mkotsur/firebase-rest-client-scala.svg?style=svg)](https://circleci.com/gh/mkotsur/firebase-rest-client-scala)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.mkotsur/firebase-client-scala_2.12/badge.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22io.github.mkotsur%22)
+
 This is a Scala REST client for [Firebase](https://www.firebase.com/), which is based on [Circe](https://github.com/circe/circe) and is intended for services that don't require realtimeness of Firebase and just need to ger read/write access to the database in a convenient way.
 
 ## Features:
