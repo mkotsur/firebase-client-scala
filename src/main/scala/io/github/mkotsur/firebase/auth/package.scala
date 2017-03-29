@@ -3,7 +3,7 @@ package io.github.mkotsur.firebase
 package object auth {
 
   /**
-    * Represents a service account JSON with project it
+    * A wrapper for service account JSON.
     */
   case class AdminCredentials(serviceAccount: Array[Byte])
 

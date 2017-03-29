@@ -17,7 +17,8 @@ libraryDependencies += "com.github.kxbmap" %% "configs" % "0.4.4"
 libraryDependencies += "org.scalaj" %% "scalaj-http" % "2.3.0"
 libraryDependencies += "com.pauldijou" %% "jwt-core" % "0.12.0"
 
-libraryDependencies += "com.google.api-client" % "google-api-client" % "1.22.0" // exclude("com.google.guava", "guava-jdk5"),
+libraryDependencies += "com.google.api-client" % "google-api-client" % "1.22.0" exclude("com.google.guava", "guava-jdk5")
+libraryDependencies += "com.google.identitytoolkit" % "gitkitclient" % "1.2.7"
 
 
 // Test dependencies
