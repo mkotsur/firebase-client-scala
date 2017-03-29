@@ -5,7 +5,7 @@ import java.io.ByteArrayInputStream
 import com.google.identitytoolkit.{GitkitClient, GitkitServerException, GitkitUser}
 import io.circe.parser.decode
 import io.github.mkotsur.firebase.auth.KeyConverter
-import io.github.mkotsur.firebase.rest.FirebaseUsers.{FirebaseUser, HashedPassword}
+import io.github.mkotsur.firebase.rest.FirebaseUser.HashedPassword
 import org.json.JSONException
 
 import scala.collection.JavaConverters._
@@ -15,18 +15,10 @@ import scala.util.{Failure, Success, Try}
 
 object FirebaseUsers {
 
-  case class HashedPassword(hash: Array[Byte], algorithm: String, salt: Option[String])
-
-  object FirebaseUser {
-    def fromGitKitUser(user: GitkitUser): FirebaseUser = {
-      new FirebaseUser(user.getLocalId, user.getEmail)
-    }
-  }
-
-  case class FirebaseUser(id: String, email: String, password: Option[String] = None)
-
+  /**
+    * Initializes [[FirebaseUsers]] client based on JSON service account.
+    */
   def apply(serviceAccount: Array[Byte]): Try[FirebaseUsers] = {
-
     for {
       serviceAccountFields <- decode[Map[String, String]](new String(serviceAccount)).toTry
       clientEmail <- Try { serviceAccountFields("client_email") }
@@ -34,13 +26,12 @@ object FirebaseUsers {
     } yield {
       val gitkitClient = GitkitClient.newBuilder()
         .setServiceAccountEmail(clientEmail)
-        .setKeyStream(new ByteArrayInputStream(KeyConverter.jsonToPKCS12(serviceAccount).right.get))
+        .setKeyStream(new ByteArrayInputStream(keyBytes))
         .setWidgetUrl(null)
         .setCookieName("gtoken")
         .build()
       new FirebaseUsers(gitkitClient)
     }
-
   }
 
 }
@@ -53,11 +44,20 @@ object FirebaseUsers {
   */
 class FirebaseUsers(val client: GitkitClient) {
 
+  /**
+    * Returns a lazy iterator of all users
+    */
   def getUsers: Iterator[FirebaseUser] =
     client.getAllUsers.asScala.map(FirebaseUser.fromGitKitUser)
 
+  /**
+    * Returns a list of all users
+    */
   def getAllUsers: Seq[FirebaseUser] = getUsers.toList
 
+  /**
+    * Returns a future containing either a user or None.
+    */
   def getUser(email: String)(implicit ec: ExecutionContext): Future[Option[FirebaseUser]] = Future {
     Option(FirebaseUser.fromGitKitUser(client.getUserByEmail(email)))
   } recoverWith {
@@ -65,6 +65,13 @@ class FirebaseUsers(val client: GitkitClient) {
       Future.successful(None)
   }
 
+  /**
+    * Creates a user. Please consider the following:
+    *   - You have to choose id yourself;
+    *   - Gitkit does allow to create multiple users with the same email address;
+    *   - Email/password authentication has to be enable at your Firebase project;
+    *   -
+    */
   def createUser(id: String, email: String, hashedPassword: HashedPassword, hashKey: String)
                 (implicit ec: ExecutionContext): Future[FirebaseUser] = {
     val user = new GitkitUser()

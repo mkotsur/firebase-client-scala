@@ -6,7 +6,7 @@ import javax.crypto.spec.SecretKeySpec
 
 import com.typesafe.config.ConfigFactory
 import configs.syntax._
-import io.github.mkotsur.firebase.rest.FirebaseUsers.{FirebaseUser, HashedPassword}
+import io.github.mkotsur.firebase.rest.FirebaseUser.HashedPassword
 import org.scalatest.TryValues._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{BeforeAndAfterAll, FunSpec, Matchers}
