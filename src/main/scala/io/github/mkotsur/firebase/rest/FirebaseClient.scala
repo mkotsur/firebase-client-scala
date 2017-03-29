@@ -101,7 +101,7 @@ class FirebaseClient(val projectId: String) {
       .asString
   } flatMap {
     response => response.body match {
-      case "null" => Future.successful()
+      case "null" => Future.successful(())
       case body => Future.failed(new FirebaseClientException(s"Expected response [null], but got [$body]"))
     }
   }

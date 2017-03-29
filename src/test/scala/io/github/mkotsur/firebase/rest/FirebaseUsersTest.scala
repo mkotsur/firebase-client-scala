@@ -36,18 +36,18 @@ class FirebaseUsersTest extends FunSpec with Matchers with ScalaFutures with Bef
 
     it("should be created with a valid token") {
       val clientTry = FirebaseUsers.apply(validJsonKey)
-      clientTry shouldBe a[Success[FirebaseUsers]]
+      clientTry shouldBe a[Success[_]]
     }
 
     it("should return failure when created with invalid JSON") {
       val clientTry = FirebaseUsers.apply("{}".getBytes)
-      clientTry shouldBe a [Failure[NoSuchElementException]]
+      clientTry shouldBe a [Failure[_]]
       clientTry.failure.exception.getMessage shouldBe "key not found: client_email"
     }
 
     it("should return failure when created with invalid token") {
       val clientTry = FirebaseUsers.apply(inValidJsonKey)
-      clientTry shouldBe a [Failure[NoSuchElementException]]
+      clientTry shouldBe a [Failure[_]]
       clientTry.failure.exception.getMessage should startWith("problem parsing PRIVATE KEY")
     }
 

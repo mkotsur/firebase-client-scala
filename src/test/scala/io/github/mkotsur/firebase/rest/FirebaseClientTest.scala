@@ -82,7 +82,7 @@ class FirebaseClientTest extends FunSpec with Matchers with ScalaFutures {
         val fc = new FirebaseClient(projectId)
         fc.put(42, "temp/answer").futureValue shouldBe Some(42)
         fc.get[Int]("temp/answer").futureValue shouldBe Some(42)
-        fc.delete("temp").futureValue shouldBe ()
+        fc.delete("temp").futureValue shouldBe((): Unit)
         fc.get[Int]("temp/answer").futureValue shouldBe None
       }
 
@@ -95,7 +95,7 @@ class FirebaseClientTest extends FunSpec with Matchers with ScalaFutures {
         fc.put(MyCow("Henrietta"), "temp/cow").futureValue shouldBe Some(MyCow("Henrietta"))
         fc.get[MyCow]("temp/cow").futureValue shouldBe Some(MyCow("Henrietta"))
 
-        fc.delete("temp").futureValue shouldBe ()
+        fc.delete("temp").futureValue shouldBe((): Unit)
         fc.get[MyCow]("temp/cow").futureValue shouldBe None
       }
     }
@@ -110,7 +110,7 @@ class FirebaseClientTest extends FunSpec with Matchers with ScalaFutures {
 
         fc.patch[Map[String, Int]](Map("something" -> 43), "temp/").futureValue shouldBe Map("something" -> 43)
         fc.get[Int]("temp/something").futureValue shouldBe Some(43)
-        fc.delete("temp").futureValue shouldBe ()
+        fc.delete("temp").futureValue shouldBe((): Unit)
       }
 
       it("should push values into Firebase") {
@@ -121,7 +121,7 @@ class FirebaseClientTest extends FunSpec with Matchers with ScalaFutures {
         pushedChildName should not be empty
 
         fc.get[Int](s"temp/pushed/$pushedChildName").futureValue shouldBe Some(43)
-        fc.delete("temp").futureValue shouldBe ()
+        fc.delete("temp").futureValue shouldBe((): Unit)
       }
     }
   }
