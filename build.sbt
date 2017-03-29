@@ -1,8 +1,10 @@
-name := "firebase-rest-client-scala"
-
-version := "1.0"
+name := "firebase-client-scala"
+organization := "io.github.mkotsur"
+version := "0.0.1-SNAPSHOT"
 
 scalaVersion := "2.12.1"
+
+scalacOptions in ThisBuild ++= Seq("-unchecked", "-deprecation")
 
 val circeVersion = "0.7.0"
 
@@ -15,7 +17,7 @@ libraryDependencies ++= Seq(
 libraryDependencies += "com.github.kxbmap" %% "configs" % "0.4.4"
 
 libraryDependencies += "org.scalaj" %% "scalaj-http" % "2.3.0"
-libraryDependencies += "com.pauldijou" %% "jwt-core" % "0.12.0"
+libraryDependencies += "org.bouncycastle" % "bcpkix-jdk15on" % "1.55"
 
 libraryDependencies += "com.google.api-client" % "google-api-client" % "1.22.0" exclude("com.google.guava", "guava-jdk5")
 libraryDependencies += "com.google.identitytoolkit" % "gitkitclient" % "1.2.7"
