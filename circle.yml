@@ -1,0 +1,14 @@
+machine:
+  environment:
+    AWS_REGION: us-east-1
+  java:
+    version: openjdk8
+
+checkout:
+  post:
+    - echo -e "-java-home\\n$JAVA_HOME" > .sbtopts
+
+dependencies:
+  pre:
+    - sudo update-alternatives --set java /usr/lib/jvm/jdk1.8.0/bin/java
+    - sudo update-alternatives --set javac /usr/lib/jvm/java-8-openjdk-amd64/bin/javac
