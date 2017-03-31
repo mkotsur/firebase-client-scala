@@ -2,6 +2,8 @@ name := "firebase-client-scala"
 organization := "io.github.mkotsur"
 // version := @see version.sbt
 
+releasePublishArtifactsAction := PgpKeys.publishSigned.value
+
 scalaVersion := "2.12.1"
 
 scalacOptions in ThisBuild ++= Seq("-unchecked", "-deprecation")
