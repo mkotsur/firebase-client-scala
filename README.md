@@ -53,6 +53,12 @@ val userFuture: Future[Option[User]] = client.get[User]("users/001")
  * There is a transitive dependency on Guava via `gitkitclient`;
  * Behavior of `FirebaseUsers.createUser` mimics gitkit behavior may be somewhat counter-intuitive. Please make sure to fully understand how it works before using in your app.
 
+## Adding to your project
+
+```sbt
+libraryDependencies += "io.github.mkotsur" %% "firebase-client-scala" % {latest-version}
+```
+
 ## Development
 
 The tests are executed against a firebase instance `rest-client-scala-test` (configured in `application-test.conf`).
