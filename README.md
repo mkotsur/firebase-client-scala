@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/mkotsur/firebase-rest-client-scala.svg?style=svg)](https://circleci.com/gh/mkotsur/firebase-rest-client-scala)
+[![CircleCI](https://circleci.com/gh/mkotsur/firebase-client-scala.svg?style=svg)](https://circleci.com/gh/mkotsur/firebase-client-scala)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.mkotsur/firebase-client-scala_2.12/badge.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22io.github.mkotsur%22)
 
 This is a Scala REST client for [Firebase](https://www.firebase.com/), which is based on [Circe](https://github.com/circe/circe) and is intended for services that don't require realtimeness of Firebase and just need to ger read/write access to the database in a convenient way.
@@ -18,10 +18,33 @@ One thing to always remember: in order to use this lib, you need a service accou
  * [More about Firebase REST API User authentication](https://firebase.google.com/docs/reference/rest/database/user-auth)
   
   
-### Creating a client
-  
-```
+### Example
 
+Database operations:
+  
+```scala
+import java.nio.file.{Files, Paths}
+import io.github.mkotsur.firebase.auth.AdminCredentials
+import io.github.mkotsur.firebase.rest.FirebaseClient
+import io.circe.generic.auto._
+import scala.concurrent.Future
+
+val jsonKey: Array[Byte] = Files.readAllBytes(
+    Paths.get(getClass.getResource("/rest-client-scala-test-b1940c24c184.json").toURI)
+)
+
+val client = new FirebaseClient("rest-client-scala-test")
+implicit val token = FirebaseClient.getToken(AdminCredentials(jsonKey)).get
+
+// Reading a primitive
+val ageFuture: Future[Option[Int]] = client.get[Int]("users/001/age")
+
+// Reading an object as a case class
+case class User(age: Int)
+val userFuture: Future[Option[User]] = client.get[User]("users/001")
+
+
+// more examples in ./src/test/scala/io/github/mkotsur/firebase/rest/FirebaseClientTest.scala
 ```
 
 ### Caveats
