@@ -28,6 +28,7 @@ import io.github.mkotsur.firebase.auth.AdminCredentials
 import io.github.mkotsur.firebase.rest.FirebaseClient
 import io.circe.generic.auto._
 import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits._
 
 val jsonKey: Array[Byte] = Files.readAllBytes(
     Paths.get(getClass.getResource("/rest-client-scala-test-b1940c24c184.json").toURI)

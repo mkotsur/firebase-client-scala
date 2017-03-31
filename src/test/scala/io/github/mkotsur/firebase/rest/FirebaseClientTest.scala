@@ -10,6 +10,7 @@ import org.scalatest.TryValues._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 
+import scala.concurrent.ExecutionContext.Implicits._
 import scala.concurrent.duration.Duration
 
 class FirebaseClientTest extends FunSpec with Matchers with ScalaFutures {

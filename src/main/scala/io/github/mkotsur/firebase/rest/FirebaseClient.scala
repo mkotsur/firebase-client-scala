@@ -9,8 +9,7 @@ import io.github.mkotsur.firebase.auth.{AccessToken, AdminCredentials}
 import io.github.mkotsur.firebase.rest.FirebaseClient.FirebaseClientException
 
 import scala.collection.JavaConverters._
-import scala.concurrent.ExecutionContext.Implicits._
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 import scalaj.http.Http
 
@@ -35,7 +34,8 @@ class FirebaseClient(val projectId: String) {
 
   private val baseUrl = s"https://$projectId.firebaseio.com"
 
-  def get[T](path: String)(implicit decoder: Decoder[T], token: AccessToken): Future[Option[T]] = Future {
+  def get[T](path: String)
+            (implicit decoder: Decoder[T], token: AccessToken, ec: ExecutionContext): Future[Option[T]] = Future {
     Http(s"$baseUrl/$path.json").param("access_token", token.value).asString
   } flatMap { response =>
     decode[Option[T]](response.body) match {
@@ -44,7 +44,8 @@ class FirebaseClient(val projectId: String) {
     }
   }
 
-  def put[T](data: T, path: String)(implicit token: AccessToken, encoder: Encoder[T], decoder: Decoder[T]): Future[Option[T]] = Future {
+  def put[T](data: T, path: String)
+            (implicit token: AccessToken, encoder: Encoder[T], decoder: Decoder[T], ec: ExecutionContext): Future[Option[T]] = Future {
     Http(s"$baseUrl/$path.json")
       .param("access_token", token.value)
       .put(encoder(data).toString())
@@ -60,7 +61,8 @@ class FirebaseClient(val projectId: String) {
   /**
     * Pushes data and returns the child name of the new data.
     */
-  def post[T](data: T, path: String)(implicit token: AccessToken, encoder: Encoder[T]): Future[String] = Future {
+  def post[T](data: T, path: String)
+             (implicit token: AccessToken, encoder: Encoder[T], ec: ExecutionContext): Future[String] = Future {
     Http(s"$baseUrl/$path.json")
       .param("access_token", token.value)
       .postData(encoder(data).toString())
@@ -76,7 +78,8 @@ class FirebaseClient(val projectId: String) {
   /**
     * Updates data and returns the child name of the new data.
     */
-  def patch[T](data: T, path: String)(implicit token: AccessToken, encoder: Encoder[T], decoder: Decoder[T]): Future[T] = Future {
+  def patch[T](data: T, path: String)
+              (implicit token: AccessToken, encoder: Encoder[T], decoder: Decoder[T], ec: ExecutionContext): Future[T] = Future {
     Http(s"$baseUrl/$path.json")
       .param("access_token", token.value)
       .postData(encoder(data).toString())
@@ -94,7 +97,8 @@ class FirebaseClient(val projectId: String) {
   /**
     * Deletes the data
     */
-  def delete(path: String)(implicit token: AccessToken): Future[Unit] = Future {
+  def delete(path: String)
+            (implicit token: AccessToken, ec: ExecutionContext): Future[Unit] = Future {
     Http(s"$baseUrl/$path.json")
       .method("DELETE")
       .param("access_token", token.value)
