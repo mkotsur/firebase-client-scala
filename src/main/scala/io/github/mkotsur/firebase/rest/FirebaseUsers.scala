@@ -45,17 +45,6 @@ object FirebaseUsers {
 class FirebaseUsers(val client: GitkitClient) {
 
   /**
-    * Returns a lazy iterator of all users
-    */
-  def getUsers: Iterator[FirebaseUser] =
-    client.getAllUsers.asScala.map(FirebaseUser.fromGitKitUser)
-
-  /**
-    * Returns a list of all users
-    */
-  def getAllUsers: Seq[FirebaseUser] = getUsers.toList
-
-  /**
     * Returns a future containing either a user or None.
     */
   def getUser(email: String)(implicit ec: ExecutionContext): Future[Option[FirebaseUser]] = Future {
@@ -86,6 +75,9 @@ class FirebaseUsers(val client: GitkitClient) {
     }
   }
 
+  /**
+    * Removes a user by id
+    */
   def removeUser(id: String)(implicit ec: ExecutionContext): Future[String] = Future {
     client.deleteUser(id)
     id

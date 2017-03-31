@@ -51,13 +51,6 @@ class FirebaseUsersTest extends FunSpec with Matchers with ScalaFutures with Bef
       clientTry.failure.exception.getMessage should startWith("problem parsing PRIVATE KEY")
     }
 
-    it("should list users") {
-      val client = FirebaseUsers.apply(validJsonKey).get
-      val users = client.getAllUsers
-      users should not be empty
-      users.map(_.email) should contain("mike@example.com")
-    }
-
     it("should fetch a user") {
       val client = FirebaseUsers.apply(validJsonKey).get
       client.getUser("mike@example.com").futureValue.get.email shouldBe "mike@example.com"
