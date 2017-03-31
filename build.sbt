@@ -1,6 +1,6 @@
 name := "firebase-client-scala"
 organization := "io.github.mkotsur"
-version := "0.0.2-SNAPSHOT"
+// version := @see version.sbt
 
 scalaVersion := "2.12.1"
 
