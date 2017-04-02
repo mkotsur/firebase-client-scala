@@ -57,7 +57,7 @@ class FirebaseUsersTest extends FunSpec with Matchers with ScalaFutures with Opt
     }
 
     it("should return None when there is no user with such email") {
-      val client = FirebaseUsers.apply(validJsonKey).get
+      val client = FirebaseUsers.apply(validJsonKey).success.value
       client.getUser("doesnotexist@example.com").futureValue shouldBe None
     }
 
