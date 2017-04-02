@@ -9,13 +9,13 @@ import configs.syntax._
 import io.github.mkotsur.firebase.rest.FirebaseUser.HashedPassword
 import org.scalatest.TryValues._
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{BeforeAndAfterAll, FunSpec, Matchers}
+import org.scalatest.{BeforeAndAfterAll, FunSpec, Matchers, OptionValues}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 import scala.util.{Failure, Success}
 
-class FirebaseUsersTest extends FunSpec with Matchers with ScalaFutures with BeforeAndAfterAll {
+class FirebaseUsersTest extends FunSpec with Matchers with ScalaFutures with OptionValues with BeforeAndAfterAll {
 
   private val config = ConfigFactory.load("application-test.conf")
 
@@ -53,7 +53,7 @@ class FirebaseUsersTest extends FunSpec with Matchers with ScalaFutures with Bef
 
     it("should fetch a user") {
       val client = FirebaseUsers.apply(validJsonKey).get
-      client.getUser("mike@example.com").futureValue.get.email shouldBe "mike@example.com"
+      client.getUser("mike@example.com").futureValue.value.email shouldBe "mike@example.com"
     }
 
     it("should return None when there is no user with such email") {

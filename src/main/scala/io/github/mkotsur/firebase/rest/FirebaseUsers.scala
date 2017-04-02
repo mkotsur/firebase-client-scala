@@ -27,7 +27,6 @@ object FirebaseUsers {
       val gitkitClient = GitkitClient.newBuilder()
         .setServiceAccountEmail(clientEmail)
         .setKeyStream(new ByteArrayInputStream(keyBytes))
-        .setWidgetUrl(null)
         .setCookieName("gtoken")
         .build()
       new FirebaseUsers(gitkitClient)
