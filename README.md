@@ -1,4 +1,5 @@
-[![CircleCI](https://circleci.com/gh/mkotsur/firebase-client-scala.svg?style=svg)](https://circleci.com/gh/mkotsur/firebase-client-scala)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c35a823408f847c6a8b2d9fd4a0f1c17)](https://www.codacy.com/app/miccots/firebase-client-scala?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mkotsur/firebase-client-scala&amp;utm_campaign=Badge_Grade)
+[![Build status](https://circleci.com/gh/mkotsur/firebase-client-scala.svg?style=shield)](https://circleci.com/gh/mkotsur/firebase-client-scala)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.mkotsur/firebase-client-scala_2.12/badge.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22io.github.mkotsur%22)
 
 This is a Scala REST client for [Firebase](https://www.firebase.com/), which is based on [Circe](https://github.com/circe/circe) and is intended for services that don't require realtimeness of Firebase and just need to ger read/write access to the database in a convenient way.
