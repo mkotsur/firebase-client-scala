@@ -11,7 +11,7 @@ import io.github.mkotsur.firebase.rest.FirebaseClient.FirebaseClientException
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
-import scalaj.http.Http
+import scalaj.http.{Http, HttpRequest}
 
 object FirebaseClient {
 
@@ -42,6 +42,12 @@ class FirebaseClient(val projectId: String) {
       case Right(v) => Future.successful(v)
       case Left(e) => Future.failed(e)
     }
+  }
+
+  def exists(path: String)
+            (implicit token: AccessToken, ec: ExecutionContext): Future[Boolean] = Future {
+    val response = Http(s"$baseUrl/$path.json").param("access_token", token.value)
+    response.asString.body != "null"
   }
 
   def put[T](data: T, path: String)

@@ -6,7 +6,6 @@ import com.typesafe.config.ConfigFactory
 import configs.syntax._
 import io.circe.generic.auto._
 import io.github.mkotsur.firebase.auth.AdminCredentials
-import org.scalatest.TryValues._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers, TryValues}
 
@@ -123,6 +122,31 @@ class FirebaseClientTest extends FunSpec with Matchers with ScalaFutures with Tr
 
         fc.get[Int](s"temp/pushed/$pushedChildName").futureValue shouldBe Some(43)
         fc.delete("temp").futureValue shouldBe((): Unit)
+      }
+    }
+
+    describe("exists") {
+      it("should return false if the path does not exist in the DB") {
+        val adminCredential = AdminCredentials(validJsonKey)
+        implicit val token = FirebaseClient.getToken(adminCredential).success.value
+        val fc = new FirebaseClient(projectId)
+
+        fc.exists("/does-not-exist").futureValue shouldBe false
+        fc.exists("does-not-exist").futureValue shouldBe false
+        fc.exists("/does-not-exist/a/b/c").futureValue shouldBe false
+        fc.exists("does-not-exist/a/b/c").futureValue shouldBe false
+
+        fc.exists("eternal/shouldReadThis/a/b/c").futureValue shouldBe false
+        fc.exists("/eternal/shouldReadThis/a/b/c").futureValue shouldBe false
+      }
+
+      it("should return true if the path exists in the DB") {
+        val adminCredential = AdminCredentials(validJsonKey)
+        implicit val token = FirebaseClient.getToken(adminCredential).success.value
+        val fc = new FirebaseClient(projectId)
+
+        fc.exists("eternal/shouldReadThis").futureValue shouldBe true
+        fc.exists("/eternal/shouldReadThis").futureValue shouldBe true
       }
     }
   }
