@@ -12,6 +12,9 @@ import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 import scalaj.http.{Http, HttpRequest}
+import java.io.FileInputStream
+
+import com.google.firebase.FirebaseApp
 
 object FirebaseClient {
 

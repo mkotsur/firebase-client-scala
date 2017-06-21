@@ -19,10 +19,10 @@ libraryDependencies ++= Seq(
 libraryDependencies += "com.github.kxbmap" %% "configs" % "0.4.4"
 
 libraryDependencies += "org.scalaj" %% "scalaj-http" % "2.3.0"
-libraryDependencies += "org.bouncycastle" % "bcpkix-jdk15on" % "1.55"
 
 libraryDependencies += "com.google.api-client" % "google-api-client" % "1.22.0" exclude("com.google.guava", "guava-jdk5")
-libraryDependencies += "com.google.identitytoolkit" % "gitkitclient" % "1.2.7"
+libraryDependencies += "com.google.firebase" % "firebase-admin" % "5.2.0"
+
 
 
 // Test dependencies
