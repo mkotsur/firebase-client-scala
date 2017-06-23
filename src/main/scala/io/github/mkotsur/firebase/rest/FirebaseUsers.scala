@@ -1,14 +1,15 @@
 package io.github.mkotsur.firebase.rest
 
 import com.google.firebase.FirebaseApp
-import com.google.firebase.auth.{FirebaseAuth, FirebaseAuthException}
 import com.google.firebase.auth.UserRecord.CreateRequest
-import com.google.firebase.tasks.{RuntimeExecutionException, Task}
+import com.google.firebase.auth.{FirebaseAuth, FirebaseAuthException}
+import com.google.firebase.tasks.RuntimeExecutionException
 import io.github.mkotsur.firebase.FirebaseAdmin
+import io.github.mkotsur.firebase.implicits._
 
-import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.concurrent.{ExecutionContext, Future}
 import scala.language.{implicitConversions, postfixOps}
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 object FirebaseUsers {
 
@@ -28,15 +29,6 @@ object FirebaseUsers {
 class FirebaseUsers(private val app: FirebaseApp) {
 
   private val auth = FirebaseAuth.getInstance(app)
-
-  private implicit def task2future[T](task: Task[T]): Future[T] = {
-    val resultPromise = Promise[T]()
-    task.addOnCompleteListener((task: Task[T]) => Try(task.getResult) match {
-        case Success(result) => resultPromise.success(result)
-        case Failure(e) => resultPromise.failure(e)
-      })
-    resultPromise.future
-  }
 
   /**
     * Returns a future containing either a user or None.
