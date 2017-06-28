@@ -73,6 +73,15 @@ class FirebaseClientTest extends FunSpec with Matchers with ScalaFutures with Tr
         fc.get[MyUser]("eternal/doesNotExist").futureValue shouldBe None
       }
 
+      it("should read arrays from Firebase") {
+        val adminCredential = AdminCredentials(validJsonKey)
+        implicit val token = FirebaseClient.getToken(adminCredential).success.value
+
+        val fc = new FirebaseClient(projectId)
+
+        fc.get[List[Int]]("listsEverywhere/listsOfInts").futureValue shouldBe Some(List(1, 2, 3, 5, 10))
+      }
+
     }
 
     describe("create and remove") {
@@ -98,6 +107,18 @@ class FirebaseClientTest extends FunSpec with Matchers with ScalaFutures with Tr
         fc.delete("temp").futureValue shouldBe((): Unit)
         fc.get[MyCow]("temp/cow").futureValue shouldBe None
       }
+
+      it("should create a list of ints in Firebase") {
+        val adminCredential = AdminCredentials(validJsonKey)
+        implicit val token = FirebaseClient.getToken(adminCredential).success.value
+        val fc = new FirebaseClient(projectId)
+
+        fc.put(List("John", "Angela", "Jake"), "listsEverywhere/listsOfStrings").futureValue shouldBe Some(List("John", "Angela", "Jake"))
+        fc.get[List[String]]("listsEverywhere/listsOfStrings").futureValue shouldBe Some(List("John", "Angela", "Jake"))
+
+        fc.delete("listsEverywhere/listsOfStrings").futureValue shouldBe((): Unit)
+        fc.get[List[String]]("listsEverywhere/listsOfStrings").futureValue shouldBe None
+      }
     }
 
     describe("update") {
@@ -122,6 +143,23 @@ class FirebaseClientTest extends FunSpec with Matchers with ScalaFutures with Tr
 
         fc.get[Int](s"temp/pushed/$pushedChildName").futureValue shouldBe Some(43)
         fc.delete("temp").futureValue shouldBe((): Unit)
+      }
+
+      it("should update the values of an existing list into Firebase") {
+        val adminCredential = AdminCredentials(validJsonKey)
+        implicit val token = FirebaseClient.getToken(adminCredential).success.value
+        val fc = new FirebaseClient(projectId)
+
+        fc.put[List[String]](List("apple", "cherry"), "listsEverywhere/listsOfFruits")
+        Thread.sleep(1000)
+        val currentFruits = fc.get[List[String]]("listsEverywhere/listsOfFruits").futureValue
+        currentFruits shouldBe Some(List("apple", "cherry"))
+
+        fc.put[List[String]](currentFruits.get ::: List[String]("pear"), "listsEverywhere/listsOfFruits")
+        Thread.sleep(1000)
+        fc.get[List[String]]("listsEverywhere/listsOfFruits").futureValue shouldBe Some(List("apple", "cherry", "pear"))
+
+        fc.delete("listsEverywhere/listsOfFruits").futureValue shouldBe((): Unit)
       }
     }
 
