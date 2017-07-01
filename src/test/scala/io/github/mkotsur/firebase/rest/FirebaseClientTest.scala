@@ -81,33 +81,49 @@ class FirebaseClientTest extends FunSpec with Matchers with ScalaFutures with Tr
 
         fc.get[List[Int]]("listsEverywhere/listsOfInts").futureValue shouldBe Some(List(1, 2, 3, 5, 10))
       }
-
     }
+ 
+    describe("filtering") {
+        it("should return a filtered map of users") {
+          case class MyUser(name: String, age: Int)
 
-    describe("create and remove") {
-      it("should create primitives in Firebase") {
-        val adminCredential = AdminCredentials(validJsonKey)
-        implicit val token = FirebaseClient.getToken(adminCredential).success.value
-        val fc = new FirebaseClient(projectId)
-        fc.put(42, "temp/answer").futureValue shouldBe Some(42)
-        fc.get[Int]("temp/answer").futureValue shouldBe Some(42)
-        fc.delete("temp").futureValue shouldBe((): Unit)
-        fc.get[Int]("temp/answer").futureValue shouldBe None
+          val adminCredential = AdminCredentials(validJsonKey)
+          implicit val token = FirebaseClient.getToken(adminCredential).success.value
+          val fc = new FirebaseClient(projectId)
+
+          val expected = Map(
+            "user1" -> MyUser("John", 42),
+            "user3" -> MyUser("Andre", 60)
+          )
+          val range = Range("name", "A", "K")
+          fc.get[Map[String, MyUser]]("filtering/map", range).futureValue shouldBe Some(expected)
+        }
       }
 
-      it("should create objects in Firebase") {
-        case class MyCow(name: String)
+      describe("create and remove") {
+        it("should create primitives in Firebase") {
+          val adminCredential = AdminCredentials(validJsonKey)
+          implicit val token = FirebaseClient.getToken(adminCredential).success.value
+          val fc = new FirebaseClient(projectId)
+          fc.put(42, "temp/answer").futureValue shouldBe Some(42)
+          fc.get[Int]("temp/answer").futureValue shouldBe Some(42)
+          fc.delete("temp").futureValue shouldBe ((): Unit)
+          fc.get[Int]("temp/answer").futureValue shouldBe None
+        }
 
-        val adminCredential = AdminCredentials(validJsonKey)
-        implicit val token = FirebaseClient.getToken(adminCredential).success.value
-        val fc = new FirebaseClient(projectId)
-        fc.put(MyCow("Henrietta"), "temp/cow").futureValue shouldBe Some(MyCow("Henrietta"))
-        fc.get[MyCow]("temp/cow").futureValue shouldBe Some(MyCow("Henrietta"))
+        it("should create objects in Firebase") {
+          case class MyCow(name: String)
 
-        fc.delete("temp").futureValue shouldBe((): Unit)
-        fc.get[MyCow]("temp/cow").futureValue shouldBe None
-      }
+          val adminCredential = AdminCredentials(validJsonKey)
+          implicit val token = FirebaseClient.getToken(adminCredential).success.value
+          val fc = new FirebaseClient(projectId)
+          fc.put(MyCow("Henrietta"), "temp/cow").futureValue shouldBe Some(MyCow("Henrietta"))
+          fc.get[MyCow]("temp/cow").futureValue shouldBe Some(MyCow("Henrietta"))
 
+          fc.delete("temp").futureValue shouldBe ((): Unit)
+          fc.get[MyCow]("temp/cow").futureValue shouldBe None
+        }
+        
       it("should create a list of ints in Firebase") {
         val adminCredential = AdminCredentials(validJsonKey)
         implicit val token = FirebaseClient.getToken(adminCredential).success.value
@@ -122,29 +138,29 @@ class FirebaseClientTest extends FunSpec with Matchers with ScalaFutures with Tr
     }
 
     describe("update") {
-      it("should update values in Firebase") {
-        val adminCredential = AdminCredentials(validJsonKey)
-        implicit val token = FirebaseClient.getToken(adminCredential).success.value
-        val fc = new FirebaseClient(projectId)
-        fc.put("First", "temp/something").futureValue shouldBe Some("First")
-        fc.get[String]("temp/something").futureValue shouldBe Some("First")
+        it("should update values in Firebase") {
+          val adminCredential = AdminCredentials(validJsonKey)
+          implicit val token = FirebaseClient.getToken(adminCredential).success.value
+          val fc = new FirebaseClient(projectId)
+          fc.put("First", "temp/something").futureValue shouldBe Some("First")
+          fc.get[String]("temp/something").futureValue shouldBe Some("First")
 
-        fc.patch[Map[String, Int]](Map("something" -> 43), "temp/").futureValue shouldBe Map("something" -> 43)
-        fc.get[Int]("temp/something").futureValue shouldBe Some(43)
-        fc.delete("temp").futureValue shouldBe((): Unit)
-      }
+          fc.patch[Map[String, Int]](Map("something" -> 43), "temp/").futureValue shouldBe Map("something" -> 43)
+          fc.get[Int]("temp/something").futureValue shouldBe Some(43)
+          fc.delete("temp").futureValue shouldBe ((): Unit)
+        }
 
-      it("should push values into Firebase") {
-        val adminCredential = AdminCredentials(validJsonKey)
-        implicit val token = FirebaseClient.getToken(adminCredential).success.value
-        val fc = new FirebaseClient(projectId)
-        val pushedChildName = fc.post[Int](43, "temp/pushed").futureValue
-        pushedChildName should not be empty
+        it("should push values into Firebase") {
+          val adminCredential = AdminCredentials(validJsonKey)
+          implicit val token = FirebaseClient.getToken(adminCredential).success.value
+          val fc = new FirebaseClient(projectId)
+          val pushedChildName = fc.post[Int](43, "temp/pushed").futureValue
+          pushedChildName should not be empty
 
-        fc.get[Int](s"temp/pushed/$pushedChildName").futureValue shouldBe Some(43)
-        fc.delete("temp").futureValue shouldBe((): Unit)
-      }
-
+          fc.get[Int](s"temp/pushed/$pushedChildName").futureValue shouldBe Some(43)
+          fc.delete("temp").futureValue shouldBe ((): Unit)
+        }
+        
       it("should update the values of an existing list into Firebase") {
         val adminCredential = AdminCredentials(validJsonKey)
         implicit val token = FirebaseClient.getToken(adminCredential).success.value
@@ -166,32 +182,31 @@ class FirebaseClientTest extends FunSpec with Matchers with ScalaFutures with Tr
 
         fc.delete("listsEverywhere/listsOfFruits").futureValue shouldBe((): Unit)
       }
-    }
 
-    describe("exists") {
-      it("should return false if the path does not exist in the DB") {
-        val adminCredential = AdminCredentials(validJsonKey)
-        implicit val token = FirebaseClient.getToken(adminCredential).success.value
-        val fc = new FirebaseClient(projectId)
+      describe("exists") {
+        it("should return false if the path does not exist in the DB") {
+          val adminCredential = AdminCredentials(validJsonKey)
+          implicit val token = FirebaseClient.getToken(adminCredential).success.value
+          val fc = new FirebaseClient(projectId)
 
-        fc.exists("/does-not-exist").futureValue shouldBe false
-        fc.exists("does-not-exist").futureValue shouldBe false
-        fc.exists("/does-not-exist/a/b/c").futureValue shouldBe false
-        fc.exists("does-not-exist/a/b/c").futureValue shouldBe false
+          fc.exists("/does-not-exist").futureValue shouldBe false
+          fc.exists("does-not-exist").futureValue shouldBe false
+          fc.exists("/does-not-exist/a/b/c").futureValue shouldBe false
+          fc.exists("does-not-exist/a/b/c").futureValue shouldBe false
 
-        fc.exists("eternal/shouldReadThis/a/b/c").futureValue shouldBe false
-        fc.exists("/eternal/shouldReadThis/a/b/c").futureValue shouldBe false
-      }
+          fc.exists("eternal/shouldReadThis/a/b/c").futureValue shouldBe false
+          fc.exists("/eternal/shouldReadThis/a/b/c").futureValue shouldBe false
+        }
 
-      it("should return true if the path exists in the DB") {
-        val adminCredential = AdminCredentials(validJsonKey)
-        implicit val token = FirebaseClient.getToken(adminCredential).success.value
-        val fc = new FirebaseClient(projectId)
+        it("should return true if the path exists in the DB") {
+          val adminCredential = AdminCredentials(validJsonKey)
+          implicit val token = FirebaseClient.getToken(adminCredential).success.value
+          val fc = new FirebaseClient(projectId)
 
-        fc.exists("eternal/shouldReadThis").futureValue shouldBe true
-        fc.exists("/eternal/shouldReadThis").futureValue shouldBe true
+          fc.exists("eternal/shouldReadThis").futureValue shouldBe true
+          fc.exists("/eternal/shouldReadThis").futureValue shouldBe true
+        }
       }
     }
   }
-
 }

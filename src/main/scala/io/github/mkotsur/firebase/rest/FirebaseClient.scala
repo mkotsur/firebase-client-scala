@@ -11,7 +11,7 @@ import io.github.mkotsur.firebase.rest.FirebaseClient.FirebaseClientException
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
-import scalaj.http.{Http, HttpRequest}
+import scalaj.http.Http
 
 object FirebaseClient {
 
@@ -34,9 +34,12 @@ class FirebaseClient(val projectId: String) {
 
   private val baseUrl = s"https://$projectId.firebaseio.com"
 
-  def get[T](path: String)
+  def get[T](path: String, options: QueryParams = QueryParams.empty)
             (implicit decoder: Decoder[T], token: AccessToken, ec: ExecutionContext): Future[Option[T]] = Future {
-    Http(s"$baseUrl/$path.json").param("access_token", token.value).asString
+    val basePath = s"$baseUrl/$path.json"
+    val fullPath = s"""$basePath${options.toStringParam}"""
+
+    Http(fullPath).param("access_token", token.value).asString
   } flatMap { response =>
     decode[Option[T]](response.body) match {
       case Right(v) => Future.successful(v)
