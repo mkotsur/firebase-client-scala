@@ -6,13 +6,13 @@ import com.typesafe.config.ConfigFactory
 import configs.syntax._
 import io.circe.generic.auto._
 import io.github.mkotsur.firebase.auth.AdminCredentials
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{FunSpec, Matchers, TryValues}
+import org.scalatest.concurrent.{Eventually, ScalaFutures}
+import org.scalatest.{FunSpec, Matchers, OptionValues, TryValues}
 
 import scala.concurrent.ExecutionContext.Implicits._
 import scala.concurrent.duration.Duration
 
-class FirebaseClientTest extends FunSpec with Matchers with ScalaFutures with TryValues {
+class FirebaseClientTest extends FunSpec with Matchers with ScalaFutures with TryValues with OptionValues with Eventually {
 
   private val config = ConfigFactory.load("application-test.conf")
 
@@ -151,13 +151,18 @@ class FirebaseClientTest extends FunSpec with Matchers with ScalaFutures with Tr
         val fc = new FirebaseClient(projectId)
 
         fc.put[List[String]](List("apple", "cherry"), "listsEverywhere/listsOfFruits")
-        Thread.sleep(1000)
-        val currentFruits = fc.get[List[String]]("listsEverywhere/listsOfFruits").futureValue
-        currentFruits shouldBe Some(List("apple", "cherry"))
 
-        fc.put[List[String]](currentFruits.get ::: List[String]("pear"), "listsEverywhere/listsOfFruits")
-        Thread.sleep(1000)
-        fc.get[List[String]]("listsEverywhere/listsOfFruits").futureValue shouldBe Some(List("apple", "cherry", "pear"))
+        val currentFruits = eventually {
+          val fruitsFound = fc.get[List[String]]("listsEverywhere/listsOfFruits").futureValue
+          fruitsFound shouldBe Some(List("apple", "cherry"))
+          fruitsFound.value
+        }
+
+        fc.put[List[String]](currentFruits ::: List[String]("pear"), "listsEverywhere/listsOfFruits")
+
+        eventually {
+          fc.get[List[String]]("listsEverywhere/listsOfFruits").futureValue shouldBe Some(List("apple", "cherry", "pear"))
+        }
 
         fc.delete("listsEverywhere/listsOfFruits").futureValue shouldBe((): Unit)
       }
