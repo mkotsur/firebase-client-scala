@@ -17,15 +17,15 @@ This is a Scala REST client for [Firebase](https://www.firebase.com/), which is 
 ### Authentication
 
 One thing to always remember: in order to use this lib, you need a service account, and your app will always be accessing data on behalf of that service account. Kind of "admin access", so it's responsibility of your app to make sure that all the changes are legitimate.
- 
+
  * [More about Google service accounts](https://developers.google.com/identity/protocols/OAuth2ServiceAccount)
  * [More about Firebase REST API User authentication](https://firebase.google.com/docs/reference/rest/database/user-auth)
-  
-  
+
+
 ### Example
 
 Database operations:
-  
+
 ```scala
 import java.nio.file.{Files, Paths}
 import io.github.mkotsur.firebase.auth.AdminCredentials
@@ -51,11 +51,6 @@ val userFuture: Future[Option[User]] = client.get[User]("users/001")
 
 // more examples in ./src/test/scala/io/github/mkotsur/firebase/rest/FirebaseClientTest.scala
 ```
-
-### Caveats
- * The library adds BouncyCastle provider at runtime. Not necessarily a bad thing, but something to be aware of;
- * There is a transitive dependency on Guava via `gitkitclient`;
- * Behavior of `FirebaseUsers.createUser` mimics gitkit behavior may be somewhat counter-intuitive. Please make sure to fully understand how it works before using in your app.
 
 ## Adding to your project
 

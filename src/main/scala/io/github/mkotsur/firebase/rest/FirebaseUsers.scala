@@ -1,85 +1,69 @@
 package io.github.mkotsur.firebase.rest
 
-import java.io.ByteArrayInputStream
+import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.UserRecord.CreateRequest
+import com.google.firebase.auth.{FirebaseAuth, FirebaseAuthException}
+import com.google.firebase.tasks.RuntimeExecutionException
+import io.github.mkotsur.firebase.FirebaseAdmin
+import io.github.mkotsur.firebase.implicits._
 
-import com.google.identitytoolkit.{GitkitClient, GitkitServerException, GitkitUser}
-import io.circe.parser.decode
-import io.github.mkotsur.firebase.auth.KeyConverter
-import io.github.mkotsur.firebase.rest.FirebaseUser.HashedPassword
-import org.json.JSONException
-
-import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
-import scala.language.postfixOps
-import scala.util.{Failure, Success, Try}
+import scala.language.{implicitConversions, postfixOps}
+import scala.util.Try
 
 object FirebaseUsers {
 
   /**
     * Initializes [[FirebaseUsers]] client based on JSON service account.
     */
-  def apply(serviceAccount: Array[Byte]): Try[FirebaseUsers] = {
-    for {
-      serviceAccountFields <- decode[Map[String, String]](new String(serviceAccount)).toTry
-      clientEmail <- Try { serviceAccountFields("client_email") }
-      keyBytes <- KeyConverter.jsonToPKCS12(serviceAccount).toTry
-    } yield {
-      val gitkitClient = GitkitClient.newBuilder()
-        .setServiceAccountEmail(clientEmail)
-        .setKeyStream(new ByteArrayInputStream(keyBytes))
-        .setCookieName("gtoken")
-        .build()
-      new FirebaseUsers(gitkitClient)
-    }
+  def apply(serviceAccount: Array[Byte]): Try[FirebaseUsers] = Try {
+    new FirebaseUsers(FirebaseAdmin.initialize(serviceAccount))
   }
 
 }
 
 /**
-  * This wraps Gitkit client to provide users management capabilities. Most likely, in the future it can be replaced with
-  * firebase-admin client for Java: https://firebase.google.com/docs/admin/setup, which currently lacks user management
-  * functionality.
+  * This wraps admin client to provide users management capabilities.
   *
   */
-class FirebaseUsers(val client: GitkitClient) {
+class FirebaseUsers(private val app: FirebaseApp) {
+
+  private val auth = FirebaseAuth.getInstance(app)
 
   /**
     * Returns a future containing either a user or None.
     */
-  def getUser(email: String)(implicit ec: ExecutionContext): Future[Option[FirebaseUser]] = Future {
-    Option(FirebaseUser.fromGitKitUser(client.getUserByEmail(email)))
+  def getUser(email: String)(implicit ec: ExecutionContext): Future[Option[FirebaseUser]] = {
+    auth.getUserByEmail(email).map { userRecord =>
+      Some(FirebaseUser(userRecord.getUid, userRecord.getEmail))
+    }
   } recoverWith {
-    case e: GitkitServerException if e.getCause.isInstanceOf[JSONException] =>
+    case e: RuntimeExecutionException
+      if e.getCause.isInstanceOf[FirebaseAuthException] &&
+        e.getCause.getMessage.contains("No user record found for the provided email")  =>
       Future.successful(None)
   }
 
   /**
     * Creates a user. Please consider the following:
     *   - You have to choose id yourself;
-    *   - Gitkit does allow to create multiple users with the same email address;
-    *   - Email/password authentication has to be enable at your Firebase project;
-    *   -
     */
-  def createUser(id: String, email: String, hashedPassword: HashedPassword, hashKey: String)
+  def createUser(id: String, email: String, password: String)
                 (implicit ec: ExecutionContext): Future[FirebaseUser] = {
-    val user = new GitkitUser()
-    user.setLocalId(id)
-    user.setEmail(email)
-    user.setHash(hashedPassword.hash)
-    hashedPassword.salt.foreach { s => user.setSalt(s.getBytes) }
 
-    Try(client.uploadUsers(hashedPassword.algorithm, hashKey.getBytes, List(user).asJava)) match {
-      case Success(_) => Future.successful(FirebaseUser(id, email))
-      case Failure(e) => Future.failed(e)
-    }
+
+    val user = new CreateRequest()
+    user.setUid(id)
+    user.setEmail(email)
+    user.setPassword(password)
+
+    auth.createUser(user).map { userRecord => FirebaseUser(userRecord.getUid, userRecord.getEmail) }
   }
 
   /**
     * Removes a user by id
     */
-  def removeUser(id: String)(implicit ec: ExecutionContext): Future[String] = Future {
-    client.deleteUser(id)
-    id
-  }
+  def removeUser(id: String)(implicit ec: ExecutionContext): Future[String] =
+    auth.deleteUser(id).map(_ => id)
 
 }
